@@ -1,0 +1,13 @@
+{% extends "base.html" %}{% from "_macros.html" import avatar %}
+{% block title %}{{ acct.role|capitalize }} | Capacity Connect{% endblock %}
+{% block body %}
+<div class="mx-auto" style="max-width:760px">
+<div class="hero mb-4">{{ avatar(acct.name, 'lg') }}<div><h1 class="h3 fw-bold mb-1">{{ acct.name }}</h1><div>{{ acct.email }}</div><span class="badge-soft info text-capitalize">{{ acct.role }}</span></div></div>
+<div class="panel"><div class="panel-title"><i class="bi bi-person-lines-fill"></i>{{ acct.role|capitalize }} details</div>
+ <div class="d-flex justify-content-between py-2 border-bottom"><span class="text-muted">Name</span><strong>{{ acct.name }}</strong></div>
+ <div class="d-flex justify-content-between py-2 border-bottom"><span class="text-muted">Email</span><strong>{{ acct.email }}</strong></div>
+ <div class="d-flex justify-content-between py-2 border-bottom"><span class="text-muted">Role</span><strong class="text-capitalize">{{ acct.role }}</strong></div>
+ <div class="d-flex justify-content-between py-2{{ ' border-bottom' if n is not none }}"><span class="text-muted">Member since</span><strong>{{ acct.created_at|fmt }}</strong></div>
+ {% if n is not none %}<div class="d-flex justify-content-between py-2"><span class="text-muted">Courses created</span><strong>{{ n }}</strong></div>{% endif %}
+</div></div>
+{% endblock %}

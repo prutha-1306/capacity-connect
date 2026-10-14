@@ -1,0 +1,66 @@
+{% extends "base.html" %}{% from "_macros.html" import thumb %}
+{% block title %}Capacity Connect | Learn. Build. Grow.{% endblock %}
+{% block main %}
+<section class="land-hero"><div class="container-xl"><div class="row align-items-center g-4">
+ <div class="col-lg-7">
+  <span class="badge-soft" style="background:rgba(255,255,255,.15);color:#ffc247"><i class="bi bi-stars me-1"></i>Smart workforce learning</span>
+  <h1 class="mt-3">Upskill your team with <span>one connected platform</span></h1>
+  <p class="lead mt-3">Courses, quizzes, skill tracking and certificates for every employee, with trainers one message away.</p>
+  <div class="d-flex flex-wrap gap-2 mt-4"><a class="btn btn-accent btn-lg px-4" href="{{ url_for('register') }}">Get started free</a><a class="btn btn-outline-light btn-lg px-4" href="{{ url_for('login') }}">Log in</a></div>
+ </div>
+ <div class="col-lg-5 d-none d-lg-block"><div class="mock">
+  <div class="float-card c1"><i class="bi bi-play-circle-fill"></i><div class="flex-grow-1"><b>Python Programming Basics</b><small>6 / 8 lessons</small><div class="progress mt-1"><div class="progress-bar" style="width:75%"></div></div></div></div>
+  <div class="float-card c2"><i class="bi bi-award-fill"></i><div><b>Certificate earned!</b><small>Web Development</small></div></div>
+  <div class="float-card c3"><i class="bi bi-graph-up-arrow"></i><div><b>Skill score 85%</b><small>Programming</small></div></div>
+ </div></div>
+</div></div></section>
+
+<div class="container-xl stats-strip"><div class="panel">
+ <div><b>{{ stats.courses }}</b><span class="text-muted">Courses</span></div><div><b>{{ stats.learners }}</b><span class="text-muted">Learners</span></div>
+ <div><b>{{ stats.lessons }}</b><span class="text-muted">Lessons</span></div><div><b>100%</b><span class="text-muted">Trainer-led</span></div></div></div>
+
+<section class="container-xl py-5" id="features">
+ <div class="text-center mb-5"><h2 class="section-title">Everything you need to learn and grow</h2><p class="section-sub">Built for trainees, trainers and administrators.</p></div>
+ <div class="row g-4">
+  {% for ico, bg, t, d in [('bi-collection-play-fill','#6c4cf1','Rich courses','Notes, YouTube videos, PDFs and slides in one place.'),
+   ('bi-patch-question-fill','#14b8a6','Quizzes and assessments','Test your knowledge and see your score instantly.'),
+   ('bi-bullseye','#ff6b6b','Skill tracking','See strengths and gaps by skill category.'),
+   ('bi-bar-chart-fill','#ffaa00','Progress dashboard','Track lessons, scores and overall progress.'),
+   ('bi-award-fill','#2563eb','Certificates','Earn a printable certificate for every course you pass.'),
+   ('bi-chat-dots-fill','#f0506e','Ask your trainer','Stuck on a lesson? Send a doubt and get a reply.')] %}
+  <div class="col-md-6 col-lg-4"><div class="panel h-100"><div class="feat-ico" style="background:{{ bg }}"><i class="bi {{ ico }}"></i></div><h3 class="h5 fw-bold">{{ t }}</h3><p class="text-muted mb-0">{{ d }}</p></div></div>
+  {% endfor %}
+ </div>
+</section>
+
+<section class="py-5" id="courses" style="background:#efeaff"><div class="container-xl">
+ <div class="d-flex justify-content-between align-items-end mb-4"><div><h2 class="section-title mb-1">Popular courses</h2><p class="section-sub mb-0">Created by our trainers. Register to enroll.</p></div></div>
+ <div class="row g-4">
+ {% for c in courses %}
+  <div class="col-md-6 col-lg-4"><a href="{{ url_for('course_detail', cid=c.id) }}" class="text-decoration-none text-reset"><div class="panel p-0 h-100 overflow-hidden course-card d-flex flex-column">
+   {{ thumb(c.category, 'wide') }}
+   <div class="p-3"><div class="d-flex justify-content-between mb-1"><span class="badge-soft info">{{ c.category }}</span><small class="text-muted"><i class="bi bi-people me-1"></i>{{ c.learners }} learners</small></div>
+    <h3 class="h6 fw-bold mt-2">{{ c.title }}</h3><p class="small text-muted mb-2">{{ c.description }}</p>
+    <div class="small text-muted"><i class="bi bi-person-badge me-1"></i>{{ c.trainer }} &middot; <i class="bi bi-collection-play me-1"></i>{{ c.lessons }} lessons</div></div></div></a></div>
+ {% endfor %}
+ </div>
+</div></section>
+
+<section class="container-xl py-5">
+ <div class="text-center mb-5"><h2 class="section-title">How it works</h2></div>
+ <div class="row g-4 text-center">
+  {% for n, t, d in [('1','Create your account','Register as a trainee or trainer in under a minute.'),('2','Learn at your pace','Watch videos, read notes and ask doubts when stuck.'),('3','Pass and get certified','Take the quiz, track your progress and download your certificate.')] %}
+  <div class="col-md-4"><div class="step-num mx-auto">{{ n }}</div><h3 class="h5 fw-bold">{{ t }}</h3><p class="text-muted">{{ d }}</p></div>{% endfor %}
+ </div>
+</section>
+
+<section class="container-xl pb-5"><div class="cta d-flex flex-wrap justify-content-between align-items-center gap-3">
+ <div><h2 class="fw-bold mb-1">Ready to start learning?</h2><div class="opacity-75">Join Capacity Connect and build the skills your career needs.</div></div>
+ <a class="btn btn-accent btn-lg px-4" href="{{ url_for('register') }}">Create free account</a></div></section>
+{% endblock %}
+{% block scripts %}<script>
+const setActive=k=>document.querySelectorAll('[data-nav]').forEach(a=>a.classList.toggle('active',a.dataset.nav===k));
+function spy(){const y=window.scrollY+140;let k='home';['features','courses'].forEach(id=>{const e=document.getElementById(id);if(e&&e.offsetTop<=y)k=id});setActive(k)}
+addEventListener('scroll',spy,{passive:true});spy();
+document.querySelectorAll('[data-nav]').forEach(a=>a.addEventListener('click',e=>{setActive(a.dataset.nav);if(a.dataset.nav==='home'){e.preventDefault();scrollTo({top:0,behavior:'smooth'})}}));
+</script>{% endblock %}

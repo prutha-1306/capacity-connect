@@ -1,0 +1,9 @@
+{% macro thumb(cat, cls='') %}<div class="thumb g{{ (cat or '')|length % 5 }} {{ cls }}"><i class="bi {{ cat|cat_icon }}"></i></div>{% endmacro %}
+{% macro avatar(name, cls='') %}<div class="avatar {{ cls }}">{{ name|initials }}</div>{% endmacro %}
+{% macro stat(color, icon, label, value, sub) %}
+<div class="stat {{ color }}"><div class="ico"><i class="bi {{ icon }}"></i></div>
+ <div><div class="lbl">{{ label }}</div><div class="num">{{ value }}</div><small>{{ sub }}</small></div></div>
+{% endmacro %}
+{% macro status(pct, mark) %}
+{% if pct >= mark %}<span class="badge-soft pass">Passed</span>{% else %}<span class="badge-soft warn">Needs Improvement</span>{% endif %}
+{% endmacro %}

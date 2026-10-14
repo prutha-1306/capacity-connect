@@ -1,0 +1,64 @@
+{% extends "base.html" %}{% from "_macros.html" import thumb, stat, status %}
+{% block title %}Manage {{ c.title }} | Capacity Connect{% endblock %}
+{% block body %}
+<a href="{{ url_for('dashboard') }}" class="small text-decoration-none"><i class="bi bi-arrow-left"></i> Back to my courses</a>
+<div class="hero my-3">{{ thumb(c.category) }}<div><h1 class="h4 fw-bold mb-1">{{ c.title }}</h1><div class="text-muted small">{{ c.description }}</div></div></div>
+<ul class="nav nav-tabs mb-3">
+ <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#perf"><i class="bi bi-graph-up me-1"></i>Trainee performance</button></li>
+ <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#mats"><i class="bi bi-collection-play me-1"></i>Lessons ({{ mats|length }})</button></li>
+ <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#quiz"><i class="bi bi-patch-question me-1"></i>Quiz ({{ qs|length }})</button></li>
+ <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#det"><i class="bi bi-gear me-1"></i>Details</button></li>
+</ul>
+<div class="tab-content">
+<div class="tab-pane fade show active" id="perf"><div class="panel">
+ {% if not perf %}<p class="text-muted mb-0">No trainees have enrolled yet.</p>{% else %}
+ <div class="table-responsive"><table class="table align-middle mb-0"><thead><tr><th>Trainee</th><th style="width:28%">Progress</th><th>Best score</th><th>Attempts</th><th>Status</th></tr></thead>
+ {% for s in perf %}<tr><td>{{ s.name }}<div class="small text-muted">{{ s.email }}</div></td>
+  <td><div class="progress"><div class="progress-bar" style="width:{{ s.progress }}%"></div></div><small>{{ s.progress }}%</small></td>
+  <td>{% if s.best is not none %}<strong>{{ s.best }}%</strong> {{ status(s.best, mark) }}{% else %}-{% endif %}</td><td>{{ s.attempts }}</td>
+  <td>{% if s.cert %}<span class="badge-soft pass">Certified</span>{% elif s.progress == 100 %}<span class="badge-soft warn">Ready for quiz</span>{% else %}<span class="badge-soft muted-b">Learning</span>{% endif %}</td></tr>{% endfor %}
+ </table></div>{% endif %}</div></div>
+
+<div class="tab-pane fade" id="mats"><div class="row g-4">
+ <div class="col-lg-6"><div class="panel">
+  {% for m in mats %}<div class="qrow align-items-center"><div><i class="bi {{ m.kind|kind_icon }} text-primary me-2"></i>{{ m.title }}</div>
+   <form method="post" action="{{ url_for('delete_item', cid=c.id, kind='materials', item=m.id) }}"><button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button></form></div>
+  {% else %}<p class="text-muted mb-0">No lessons yet.</p>{% endfor %}</div></div>
+ <div class="col-lg-6"><form method="post" enctype="multipart/form-data" action="{{ url_for('add_material', cid=c.id) }}" class="panel">
+  <div class="panel-title">Add lesson</div>
+  <div class="row g-2"><div class="col-md-5"><select class="form-select" name="kind" id="kind"><option value="note">Notes</option><option value="video">YouTube video</option><option value="pdf">PDF</option><option value="ppt">Presentation (PPT/PPTX)</option></select></div>
+   <div class="col-md-7"><input class="form-control" name="title" placeholder="Lesson title" required></div>
+   <div class="col-12" id="textBox"><label class="form-label small" id="lbl">Notes text</label><textarea class="form-control" name="content" id="content" rows="5"></textarea></div>
+   <div class="col-12 d-none" id="fileBox"><label class="form-label small">Choose file (max 30 MB)</label><input class="form-control" type="file" name="file" id="file"></div>
+   <div class="col-12"><button class="btn btn-primary">Add lesson</button></div></div></form></div>
+</div></div>
+
+<div class="tab-pane fade" id="quiz"><div class="row g-4">
+ <div class="col-lg-6"><div class="panel">
+  {% for x in qs %}<div class="qrow"><div><div class="fw-semibold">{{ x.text }}</div><div class="small text-muted">A) {{ x.a }} &nbsp; B) {{ x.b }} &nbsp; C) {{ x.c }} &nbsp; D) {{ x.d }} &nbsp; <strong>Correct: {{ x.answer|upper }}</strong></div></div>
+   <form method="post" action="{{ url_for('delete_item', cid=c.id, kind='questions', item=x.id) }}"><button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button></form></div>
+  {% else %}<p class="text-muted mb-0">No questions yet.</p>{% endfor %}</div></div>
+ <div class="col-lg-6"><form method="post" action="{{ url_for('add_question', cid=c.id) }}" class="panel"><div class="panel-title">Add quiz question</div>
+  <input class="form-control mb-2" name="text" placeholder="Question" required>
+  <div class="row g-2 mb-2">{% for k in 'abcd' %}<div class="col-6"><input class="form-control" name="{{ k }}" placeholder="Option {{ k|upper }}" required></div>{% endfor %}</div>
+  <div class="d-flex gap-2"><select class="form-select w-auto" name="answer"><option value="a">Correct: A</option><option value="b">Correct: B</option><option value="c">Correct: C</option><option value="d">Correct: D</option></select><button class="btn btn-primary">Add question</button></div></form></div>
+</div></div>
+
+<div class="tab-pane fade" id="det"><div class="row g-4">
+ <div class="col-lg-6"><form method="post" action="{{ url_for('edit_course', cid=c.id) }}" class="panel"><div class="panel-title">Edit course</div>
+  <input class="form-control mb-2" name="title" value="{{ c.title }}" required><input class="form-control mb-2" name="category" value="{{ c.category }}" required>
+  <textarea class="form-control mb-3" name="description" rows="3" required>{{ c.description }}</textarea><button class="btn btn-primary">Save changes</button></form></div>
+ <div class="col-lg-6"><form method="post" action="{{ url_for('remove_course', cid=c.id) }}" onsubmit="return confirm('Delete this course and all its data?')" class="panel border-danger-subtle">
+  <div class="panel-title text-danger">Delete course</div><p class="small text-muted">This removes lessons, quiz questions, enrollments and results.</p><button class="btn btn-outline-danger">Delete course</button></form></div>
+</div></div>
+</div>
+{% endblock %}
+{% block scripts %}<script>
+const k=document.getElementById('kind');
+k.onchange=()=>{const f=k.value==='pdf'||k.value==='ppt';
+ document.getElementById('textBox').classList.toggle('d-none',f);document.getElementById('fileBox').classList.toggle('d-none',!f);
+ document.getElementById('content').required=!f;document.getElementById('file').required=f;
+ document.getElementById('file').accept=k.value==='pdf'?'.pdf':'.ppt,.pptx';
+ document.getElementById('lbl').textContent=k.value==='video'?'YouTube link':'Notes text'};
+k.onchange();
+</script>{% endblock %}

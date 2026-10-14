@@ -1,0 +1,20 @@
+{% extends "base.html" %}{% from "_macros.html" import thumb, avatar, stat, status %}
+{% block title %}My Courses | Capacity Connect{% endblock %}
+{% block body %}
+<div class="hero mb-4">{{ avatar(session.user.name) }}<div class="me-auto"><h1 class="h3 fw-bold mb-1">Welcome, {{ session.user.name }} 👋</h1><div class="text-muted">Create courses, add content and watch your trainees grow.</div></div>
+ <a class="btn btn-primary" href="{{ url_for('course_new') }}"><i class="bi bi-plus-lg me-1"></i>New course</a></div>
+<div class="row g-3 mb-4">
+ <div class="col-sm-6 col-lg-4">{{ stat('blue','bi-collection-fill','My Courses', courses|length, 'Created by you') }}</div>
+ <div class="col-sm-6 col-lg-4">{{ stat('green','bi-people-fill','Trainees', learners, 'Enrolled in your courses') }}</div>
+ <div class="col-sm-6 col-lg-4">{{ stat('orange','bi-bar-chart-fill','Average Score', (avg ~ '%') if avg is not none else '-', 'Across all quizzes') }}</div>
+</div>
+<div class="row g-4">
+ <div class="col-lg-7"><div class="panel h-100"><div class="panel-title"><i class="bi bi-collection-fill"></i>My Courses</div>
+  {% for c in courses %}<div class="lrow">{{ thumb(c.category) }}<div class="meta"><div class="t">{{ c.title }}</div><div class="s">{{ c.category }} &middot; {{ c.lessons }} lessons &middot; {{ c.qn }} questions &middot; {{ c.learners }} trainees</div></div>
+   <a class="btn btn-primary btn-sm" href="{{ url_for('manage', cid=c.id) }}">Manage</a></div>
+  {% else %}<p class="text-muted">No courses yet. Create your first one.</p>{% endfor %}</div></div>
+ <div class="col-lg-5"><div class="panel h-100"><div class="panel-title"><i class="bi bi-clipboard2-check-fill"></i>Recent Quiz Activity</div>
+  {% for a in recent %}{% set pct = a.score * 100 // a.total %}<div class="qrow"><div><div class="fw-semibold">{{ a.trainee }}</div><div class="small text-muted">{{ a.title }} &middot; {{ a.taken_at|fmt(true) }}</div></div><div class="text-end"><strong>{{ pct }}%</strong> {{ status(pct, mark) }}</div></div>
+  {% else %}<p class="text-muted">Trainee quiz results will appear here.</p>{% endfor %}</div></div>
+</div>
+{% endblock %}

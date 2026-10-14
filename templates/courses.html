@@ -1,0 +1,35 @@
+{% extends "base.html" %}{% from "_macros.html" import thumb %}
+{% block title %}Courses | Capacity Connect{% endblock %}
+{% block body %}
+<div class="d-flex flex-wrap gap-3 align-items-center mb-3">
+ <div class="me-auto"><h1 class="h3 fw-bold mb-0">Browse Courses</h1><div class="text-muted">Courses created by our trainers. Enroll to start learning.</div></div>
+ <input id="search" class="form-control w-auto" placeholder="Search courses" style="min-width:240px">
+</div>
+<div class="d-flex flex-wrap gap-2 mb-4" id="pills">
+ <button class="btn btn-sm btn-primary" data-cat="">All</button>
+ {% for c in cats %}<button class="btn btn-sm btn-outline-primary" data-cat="{{ c }}">{{ c }}</button>{% endfor %}
+</div>
+<div class="row g-4" id="grid">
+{% for c in rows %}
+ <div class="col-md-6 col-xl-4 course" data-cat="{{ c.category }}" data-text="{{ (c.title ~ ' ' ~ c.description ~ ' ' ~ c.category)|lower }}">
+  <div class="panel p-0 h-100 d-flex flex-column overflow-hidden">
+   {{ thumb(c.category, 'wide') }}
+   <div class="p-3 d-flex flex-column flex-grow-1">
+    <div class="d-flex justify-content-between mb-1"><span class="badge-soft info">{{ c.category }}</span><span class="small text-muted"><i class="bi bi-collection-play me-1"></i>{{ c.lessons }} lessons</span></div>
+    <h2 class="h6 fw-bold mt-1"><a class="text-reset text-decoration-none" href="{{ url_for('course_detail', cid=c.id) }}">{{ c.title }}</a></h2><p class="small text-muted mb-2">{{ c.description }}</p>
+    <div class="small text-muted mb-1"><i class="bi bi-person-badge me-1"></i>{{ c.trainer }}</div>
+    {% if not c.enrolled %}<div class="small text-success mb-2">{{ c.reason }}</div>{% endif %}
+    <div class="mt-auto">
+    {% if c.enrolled %}<a class="btn btn-outline-primary w-100" href="{{ url_for('learn', cid=c.id) }}">Continue learning &rarr;</a>
+    {% else %}<form method="post" action="{{ url_for('enroll', cid=c.id) }}"><button class="btn btn-primary w-100">Enroll now</button></form>{% endif %}
+    </div></div></div></div>
+{% endfor %}
+</div>
+<p id="none" class="text-muted d-none">No courses match your search.</p>
+{% endblock %}
+{% block scripts %}<script>
+let cat='';const s=document.getElementById('search');
+function apply(){const t=s.value.toLowerCase();let n=0;document.querySelectorAll('.course').forEach(e=>{const ok=(!cat||e.dataset.cat===cat)&&e.dataset.text.includes(t);e.classList.toggle('d-none',!ok);if(ok)n++});document.getElementById('none').classList.toggle('d-none',n>0)}
+s.oninput=apply;
+document.querySelectorAll('#pills button').forEach(b=>b.onclick=()=>{cat=b.dataset.cat;document.querySelectorAll('#pills button').forEach(x=>{x.className='btn btn-sm '+(x===b?'btn-primary':'btn-outline-primary')});apply()});
+</script>{% endblock %}

@@ -1,0 +1,27 @@
+{% extends "base.html" %}{% from "_macros.html" import thumb %}
+{% block title %}{{ c.title }} | Capacity Connect{% endblock %}
+{% block main %}
+<section class="detail-band"><div class="container-xl"><div class="row"><div class="col-lg-8">
+ <a href="{{ url_for('index') if not session.user else url_for('courses' if session.user.role=='trainee' else 'dashboard') }}" class="small text-white-50 text-decoration-none"><i class="bi bi-arrow-left"></i> Back</a>
+ <div class="mt-3"><span class="badge-soft">{{ c.category }}</span></div>
+ <h1 class="fw-bold mt-2">{{ c.title }}</h1><p class="lead text-white-50">{{ c.description }}</p>
+ <div class="d-flex flex-wrap gap-4 small"><span><i class="bi bi-person-badge me-1 text-warning"></i>Trainer: {{ c.trainer }}</span><span><i class="bi bi-collection-play me-1 text-warning"></i>{{ mats|length }} lessons</span>
+  <span><i class="bi bi-patch-question me-1 text-warning"></i>{{ nq }} quiz questions</span><span><i class="bi bi-people me-1 text-warning"></i>{{ learners }} learners</span></div>
+</div></div></div></section>
+<div class="container-xl pb-5"><div class="row g-4">
+ <div class="col-lg-8" style="padding-top:1.5rem"><div class="panel mb-4"><div class="panel-title"><i class="bi bi-list-check"></i>What you'll learn</div>
+  {% for m in mats %}<div class="syl"><i class="bi {{ m.kind|kind_icon }}"></i><span class="flex-grow-1">{{ m.title }}</span><span class="badge-soft muted-b text-capitalize">{{ m.kind }}</span></div>
+  {% else %}<p class="text-muted mb-0">The trainer is still adding lessons.</p>{% endfor %}</div>
+  <div class="panel"><div class="panel-title"><i class="bi bi-award-fill"></i>Certificate</div><p class="text-muted mb-0">Complete every lesson and pass the quiz with at least {{ mark }}% to earn a certificate of completion.</p></div></div>
+ <div class="col-lg-4"><div class="panel enroll-card">
+  {{ thumb(c.category, 'wide') }}
+  <div class="pt-3">
+  {% if not session.user %}<a class="btn btn-primary w-100 mb-2" href="{{ url_for('register') }}">Register to enroll</a><a class="btn btn-outline-primary w-100" href="{{ url_for('login') }}">Log in</a>
+  {% elif session.user.role == 'trainee' %}
+   {% if is_enrolled %}<a class="btn btn-primary w-100" href="{{ url_for('learn', cid=c.id) }}">Continue learning</a>
+   {% else %}<form method="post" action="{{ url_for('enroll', cid=c.id) }}"><button class="btn btn-primary w-100">Enroll now</button></form>{% endif %}
+  {% elif is_owner %}<a class="btn btn-primary w-100" href="{{ url_for('manage', cid=c.id) }}">Manage this course</a>
+  {% else %}<p class="small text-muted mb-0">Only trainees can enroll in courses.</p>{% endif %}
+  </div></div></div>
+</div></div>
+{% endblock %}

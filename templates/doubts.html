@@ -1,0 +1,12 @@
+{% extends "base.html" %}{% block title %}Doubts | Capacity Connect{% endblock %}
+{% block body %}
+<div class="hero mb-4"><div class="avatar"><i class="bi bi-chat-dots-fill"></i></div><div><h1 class="h3 fw-bold mb-1">Trainee doubts</h1><div class="text-muted">{{ open_n }} waiting for your reply &middot; {{ rows|length }} total</div></div></div>
+{% for r in rows %}
+<div class="panel mb-3"><div class="d-flex justify-content-between flex-wrap gap-2 mb-2">
+ <div><span class="badge-soft info">{{ r.title }}</span> <strong class="ms-2">{{ r.trainee }}</strong> <small class="text-muted ms-1">{{ r.created_at|fmt(true) }}</small></div>
+ {% if r.answer is none %}<span class="badge-soft bad">Open</span>{% else %}<span class="badge-soft pass">Answered</span>{% endif %}</div>
+ <p class="mb-3">{{ r.question }}</p>
+ <form method="post" action="{{ url_for('reply_doubt', did=r.id) }}"><textarea class="form-control mb-2" name="answer" rows="2" placeholder="Write your reply" required>{{ r.answer or '' }}</textarea>
+  <button class="btn btn-sm btn-primary">{{ 'Send reply' if r.answer is none else 'Update reply' }}</button></form></div>
+{% else %}<div class="panel text-muted">No doubts yet. When trainees ask questions on your lessons, they will appear here.</div>{% endfor %}
+{% endblock %}

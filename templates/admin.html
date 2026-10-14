@@ -1,0 +1,58 @@
+{% extends "base.html" %}{% from "_macros.html" import stat, avatar %}
+{% block title %}Admin | Capacity Connect{% endblock %}
+{% block body %}
+<div class="hero mb-4">{{ avatar(session.user.name) }}<div><h1 class="h3 fw-bold mb-1">Administrator dashboard</h1><div class="text-muted">Manage accounts, roles, courses and platform-wide reports.</div></div></div>
+<div class="row g-3 mb-4">
+ <div class="col-sm-6 col-lg-3">{{ stat('blue','bi-people-fill','Users', stats.users, roles.trainer ~ ' trainers, ' ~ roles.trainee ~ ' trainees') }}</div>
+ <div class="col-sm-6 col-lg-3">{{ stat('green','bi-book-fill','Courses', stats.courses, 'On the platform') }}</div>
+ <div class="col-sm-6 col-lg-3">{{ stat('purple','bi-journal-check','Enrollments', stats.enrollments, 'Total') }}</div>
+ <div class="col-sm-6 col-lg-3">{{ stat('orange','bi-award-fill','Certificates', stats.certs, 'Issued') }}</div>
+</div>
+<ul class="nav nav-tabs mb-3" id="tabs">
+ <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#overview"><i class="bi bi-graph-up me-1"></i>Reports</button></li>
+ <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#users"><i class="bi bi-people me-1"></i>Users and roles</button></li>
+ <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#courses"><i class="bi bi-book me-1"></i>Courses</button></li>
+</ul>
+<div class="tab-content">
+<div class="tab-pane fade show active" id="overview">
+ <div class="row g-4 mb-4"><div class="col-lg-8"><div class="panel"><div class="panel-title">Enrollments and certificates by course</div><canvas id="c1" height="110"></canvas></div></div>
+  <div class="col-lg-4"><div class="panel"><div class="panel-title">Users by role</div><canvas id="c2" height="200"></canvas></div></div></div>
+ <div class="panel"><div class="panel-title">Course report</div><div class="table-responsive"><table class="table mb-0 align-middle">
+  <thead><tr><th>Course</th><th>Trainer</th><th>Lessons</th><th>Enrolled</th><th>Certificates</th><th>Avg quiz score</th></tr></thead>
+  {% for c in courses %}<tr><td>{{ c.title }}</td><td>{{ c.trainer }}</td><td>{{ c.lessons }}</td><td>{{ c.learners }}</td><td>{{ c.certs }}</td><td>{{ (c.avg ~ '%') if c.avg is not none else '-' }}</td></tr>{% endfor %}</table></div></div>
+</div>
+
+<div class="tab-pane fade" id="users"><div class="row g-4">
+ <div class="col-xl-8"><div class="panel"><div class="table-responsive"><table class="table mb-0 align-middle">
+  <thead><tr><th>Name</th><th>Role</th><th>Member since</th><th>Status</th><th></th></tr></thead>
+  {% for x in users %}<tr><td>{{ x.name }}<div class="small text-muted">{{ x.email }}</div></td>
+   <td><span class="badge-soft {{ 'info' if x.role=='admin' else ('warn' if x.role=='trainer' else 'muted-b') }} text-capitalize">{{ x.role }}{{ ' (you)' if x.id==session.user.id }}</span></td>
+   <td>{{ x.created_at|fmt }}</td>
+   <td>{% if x.active %}<span class="badge-soft pass">Active</span>{% else %}<span class="badge-soft muted-b">Deactivated</span>{% endif %}</td>
+   <td class="text-end text-nowrap">{% if x.id != session.user.id %}
+    <form method="post" action="{{ url_for('admin_toggle', uid=x.id) }}" class="d-inline"><button class="btn btn-sm btn-outline-secondary">{{ 'Deactivate' if x.active else 'Activate' }}</button></form>
+    <form method="post" action="{{ url_for('admin_delete', kind='user', item=x.id) }}" class="d-inline" onsubmit="return confirm('Remove this user and their data?')"><button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button></form>{% endif %}</td></tr>{% endfor %}
+ </table></div><p class="small text-muted mt-3 mb-0">Roles are set when an account is created and cannot be changed here.</p></div></div>
+ <div class="col-xl-4"><form method="post" action="{{ url_for('admin_user_add') }}" class="panel"><div class="panel-title">Add account</div>
+  <input class="form-control mb-2" name="name" placeholder="Full name" required><input class="form-control mb-2" type="email" name="email" placeholder="Email" required>
+  <input class="form-control mb-2" type="password" name="password" placeholder="Temporary password" minlength="6" required>
+  <select class="form-select mb-3" name="role"><option value="trainee">Trainee</option><option value="trainer">Trainer</option><option value="admin">Administrator</option></select>
+  <button class="btn btn-primary w-100">Create account</button></form></div>
+</div></div>
+
+<div class="tab-pane fade" id="courses"><div class="panel"><div class="table-responsive"><table class="table mb-0 align-middle">
+ <thead><tr><th>Course</th><th>Category</th><th>Trainer</th><th>Enrolled</th><th></th></tr></thead>
+ {% for c in courses %}<tr><td>{{ c.title }}</td><td>{{ c.category }}</td>
+  <td>{{ c.trainer or '-' }}</td>
+  <td>{{ c.learners }}</td><td class="text-end"><form method="post" action="{{ url_for('admin_delete', kind='course', item=c.id) }}" onsubmit="return confirm('Delete this course and its data?')"><button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button></form></td></tr>{% endfor %}
+</table></div><p class="small text-muted mt-3 mb-0">Courses are created by trainers. Admins can remove them but cannot change the trainer.</p></div></div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script>
+const cs={{ courses|tojson }};
+new Chart(c1,{type:'bar',data:{labels:cs.map(c=>c.title),datasets:[{label:'Enrolled',data:cs.map(c=>c.learners),backgroundColor:'#6c4cf1',borderRadius:5},{label:'Certificates',data:cs.map(c=>c.certs),backgroundColor:'#14b8a6',borderRadius:5}]},options:{scales:{y:{beginAtZero:true,ticks:{precision:0}}}}});
+new Chart(c2,{type:'doughnut',data:{labels:['Admins','Trainers','Trainees'],datasets:[{data:[{{ roles.admin }},{{ roles.trainer }},{{ roles.trainee }}],backgroundColor:['#ff6b6b','#ffc247','#6c4cf1']}]}});
+if(location.hash){const b=document.querySelector(`[data-bs-target="${location.hash}"]`);if(b)bootstrap.Tab.getOrCreateInstance(b).show();}
+</script>{% endblock %}

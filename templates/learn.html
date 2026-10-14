@@ -1,0 +1,42 @@
+{% extends "base.html" %}{% from "_macros.html" import thumb %}
+{% block title %}{{ c.title }} | Capacity Connect{% endblock %}
+{% block body %}
+<a href="{{ url_for('dashboard') }}" class="small text-decoration-none"><i class="bi bi-arrow-left"></i> Back to dashboard</a>
+<div class="row g-4 mt-1">
+<div class="col-lg-8">
+ <div class="hero mb-4">{{ thumb(c.category) }}<div><h1 class="h4 fw-bold mb-1">{{ c.title }}</h1><div class="text-muted small">{{ c.description }}<br>Trainer: {{ c.trainer }}</div></div></div>
+ {% for m in mats %}
+ <div class="panel mb-3" id="m{{ m.id }}">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+   <h2 class="h6 fw-bold m-0"><i class="bi {{ m.kind|kind_icon }} text-primary me-2"></i>{{ m.title }}</h2>
+   {% if m.done %}<span class="badge-soft pass"><i class="bi bi-check-lg"></i> Completed</span>
+   {% else %}<form method="post" action="{{ url_for('complete', mid=m.id) }}"><button class="btn btn-sm btn-outline-success">Mark as complete</button></form>{% endif %}
+  </div>
+  {% if m.kind == 'video' %}<div class="ratio ratio-16x9"><iframe src="{{ m.content|yt }}" title="{{ m.title }}" allowfullscreen loading="lazy"></iframe></div>
+  {% elif m.kind == 'pdf' %}<iframe class="pdfframe" src="{{ url_for('files', name=m.content) }}"></iframe>
+   <a class="btn btn-sm btn-outline-primary mt-2" href="{{ url_for('files', name=m.content, dl=1) }}"><i class="bi bi-download me-1"></i>Download PDF</a>
+  {% elif m.kind == 'ppt' %}<a class="btn btn-primary" href="{{ url_for('files', name=m.content, dl=1) }}"><i class="bi bi-download me-1"></i>Download presentation</a>
+  {% else %}<div class="note-text">{{ m.content }}</div>{% endif %}
+ </div>
+ {% else %}<div class="panel text-muted">The trainer hasn't added lessons yet.</div>{% endfor %}
+<div class="panel" id="doubts"><div class="panel-title"><i class="bi bi-chat-dots-fill"></i>Ask your trainer</div>
+  <form method="post" action="{{ url_for('ask_doubt', cid=c.id) }}" class="mb-3"><textarea class="form-control mb-2" name="question" rows="2" placeholder="Stuck on something? Ask {{ c.trainer }}..." required></textarea><button class="btn btn-primary btn-sm"><i class="bi bi-send me-1"></i>Send doubt</button></form>
+  {% for x in my_doubts %}<div class="qrow d-block"><div class="d-flex justify-content-between"><strong>{{ x.question }}</strong>{% if x.answer is none %}<span class="badge-soft warn">Waiting for reply</span>{% else %}<span class="badge-soft pass">Answered</span>{% endif %}</div>
+   <small class="text-muted">{{ x.created_at|fmt(true) }}</small>{% if x.answer is not none %}<div class="answer"><small class="text-muted d-block">Reply from {{ c.trainer }}</small>{{ x.answer }}</div>{% endif %}</div>
+  {% else %}<p class="small text-muted mb-0">Your questions and the trainer's replies will appear here.</p>{% endfor %}</div>
+</div>
+<div class="col-lg-4"><div class="panel position-sticky" style="top:90px">
+ <div class="panel-title"><i class="bi bi-bar-chart-fill"></i>Your progress</div>
+ <div class="d-flex justify-content-between small text-muted"><span>{{ d }} / {{ t }} lessons</span><span>{{ p }}%</span></div>
+ <div class="progress mb-4"><div class="progress-bar" style="width:{{ p }}%"></div></div>
+ <div class="panel-title"><i class="bi bi-clipboard2-check-fill"></i>Quiz and certificate</div>
+ {% if nq == 0 %}<p class="small text-muted">The trainer hasn't added quiz questions yet.</p>
+ {% elif p < 100 %}<p class="small text-muted"><i class="bi bi-lock-fill me-1"></i>Complete all lessons to unlock the {{ nq }}-question quiz.</p>
+ {% elif b is none %}<p class="small">{{ nq }} questions &middot; pass mark {{ mark }}%<br>You can attempt this quiz once.</p>
+  <a class="btn btn-primary w-100" href="{{ url_for('quiz', cid=c.id) }}">Start quiz</a>
+ {% else %}<p class="small">Quiz completed.<br>Your score: <strong>{{ b }}%</strong> (pass mark {{ mark }}%)</p>
+  {% if b >= mark %}<a class="btn btn-outline-success w-100" href="{{ url_for('certificate', cid=c.id) }}"><i class="bi bi-award-fill me-1"></i>View certificate</a>
+  {% else %}<span class="badge-soft warn">Needs Improvement</span>{% endif %}
+ {% endif %}
+</div></div></div>
+{% endblock %}

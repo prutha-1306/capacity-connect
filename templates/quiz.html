@@ -1,0 +1,10 @@
+{% extends "base.html" %}{% block title %}Quiz | Capacity Connect{% endblock %}
+{% block body %}
+<div class="mx-auto" style="max-width:780px">
+<div class="hero mb-4"><div class="avatar"><i class="bi bi-patch-question-fill"></i></div><div><h1 class="h4 fw-bold mb-1">{{ c.title }}: Quiz</h1><div class="text-muted small">{{ qs|length }} questions. Choose one answer for each.</div></div></div>
+<form method="post">
+ {% for x in qs %}<div class="panel mb-3"><p class="fw-semibold mb-3">{{ loop.index }}. {{ x.text }}</p>
+  {% for k in 'abcd' %}<div class="form-check mb-1"><input class="form-check-input" type="radio" name="q{{ x.id }}" id="q{{ x.id }}{{ k }}" value="{{ k }}" required><label class="form-check-label" for="q{{ x.id }}{{ k }}">{{ x[k] }}</label></div>{% endfor %}</div>{% endfor %}
+ <button class="btn btn-primary px-4">Submit answers</button> <a class="btn btn-link" href="{{ url_for('learn', cid=c.id) }}">Cancel</a>
+</form></div>
+{% endblock %}

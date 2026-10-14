@@ -1,0 +1,10 @@
+{% extends "base.html" %}{% block title %}New course | Capacity Connect{% endblock %}
+{% block body %}
+<div class="mx-auto" style="max-width:620px"><div class="panel p-4"><h1 class="h4 fw-bold mb-3">Create a course</h1>
+ <form method="post">
+  <label class="form-label">Course title</label><input class="form-control mb-3" name="title" required>
+  <label class="form-label">Category (used for skill tracking)</label><input class="form-control mb-3" name="category" placeholder="e.g. Programming" required>
+  <label class="form-label">Description</label><textarea class="form-control mb-3" name="description" rows="3" required></textarea>
+  <button class="btn btn-primary">Create course</button> <a class="btn btn-link" href="{{ url_for('dashboard') }}">Cancel</a>
+ </form></div></div>
+{% endblock %}

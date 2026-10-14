@@ -1,0 +1,10 @@
+{% extends "base.html" %}{% block title %}Certificates | Capacity Connect{% endblock %}
+{% block body %}
+<h1 class="h3 fw-bold">My Certificates</h1><p class="text-muted">Earned by completing every lesson and passing the course quiz.</p>
+<div class="row g-3">
+{% for c in certs %}<div class="col-md-6 col-xl-4"><div class="panel"><div class="cert-mini border-0 p-0"><div class="ci"><i class="bi bi-patch-check-fill"></i></div>
+ <div><div class="fw-semibold">{{ c.title }}</div><div class="small text-muted mb-2">Issued on: {{ c.issued|fmt }}</div>
+ <a class="btn btn-sm btn-primary" href="{{ url_for('certificate', cid=c.id) }}">View Certificate</a></div></div></div></div>
+{% else %}<div class="col-12"><div class="panel text-muted">No certificates yet. Finish a course and pass its quiz to earn one.</div></div>{% endfor %}
+</div>
+{% endblock %}
